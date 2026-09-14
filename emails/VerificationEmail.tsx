@@ -8,7 +8,7 @@ import {
   Section,
   Text,
   Button,
-} from "@react-email/component";
+} from "@react-email/components";
 
 interface VerificationEmailProps {
   BASE_URL?: string;
