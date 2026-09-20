@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import type { ComponentType, ReactNode } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import AuthProvider from "@/context/AuthProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -11,6 +13,10 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+const TypedAuthProvider = AuthProvider as unknown as ComponentType<{
+  children: ReactNode;
+}>;
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -24,7 +30,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {children}
+        <TypedAuthProvider>{children}</TypedAuthProvider>
       </body>
     </html>
   );
