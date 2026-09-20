@@ -6,5 +6,5 @@ export default function AuthProvider({
 }: {
   children: React.ReactNode;
 }) {
-  <SessionProvider>{children}</SessionProvider>;
+  return <SessionProvider>{children}</SessionProvider>;
 }
