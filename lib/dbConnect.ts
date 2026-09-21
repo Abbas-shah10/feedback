@@ -1,23 +1,28 @@
 import mongoose from "mongoose";
 
-type ConnectionObject = {
-  isConnected?: number;
-};
-
-const connection: ConnectionObject = {};
+let connectionPromise: Promise<typeof mongoose> | null = null;
 
 async function dbConnect(): Promise<void> {
-  if (connection.isConnected) {
-    console.log("Already connected to DataBase ");
+  if (mongoose.connection.readyState === 1) {
     return;
   }
+
+  const mongoUri = process.env.MONGO_URI;
+  if (!mongoUri) {
+    throw new Error("MONGO_URI is not configured");
+  }
+
+  if (!connectionPromise) {
+    connectionPromise = mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 10000,
+    });
+  }
+
   try {
-    const db = await mongoose.connect(process.env.MONGO_URI || "");
-    connection.isConnected = db.connections[0].readyState;
-    console.log("Database connected successfully");
+    await connectionPromise;
   } catch (error) {
-    console.log("database connection failed", error);
-    process.exit(1);
+    connectionPromise = null;
+    throw error;
   }
 }
 

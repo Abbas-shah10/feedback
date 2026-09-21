@@ -4,9 +4,8 @@ import bcrypt from "bcryptjs";
 import { sendVerificationEmail } from "@/helpers/sendVerificationEmail";
 
 export async function POST(request: Request) {
-  await dbConnect();
-
   try {
+    await dbConnect();
     const { username, email, password } = await request.json();
     const existingUserVerifiedByUsername = await UserModel.findOne({
       username,
@@ -14,7 +13,7 @@ export async function POST(request: Request) {
     });
 
     if (existingUserVerifiedByUsername) {
-      Response.json(
+      return Response.json(
         {
           success: false,
           message: "username is already taken",
