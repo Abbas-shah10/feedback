@@ -88,12 +88,19 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error("Error registerting user", error);
+    const isDatabaseTimeout =
+      error instanceof Error &&
+      "code" in error &&
+      (error as Error & { code?: string }).code === "ETIMEOUT";
+
     return Response.json(
       {
         success: false,
-        message: "Error registering user",
+        message: isDatabaseTimeout
+          ? "Database is temporarily unavailable. Check your network DNS and MongoDB Atlas settings."
+          : "Error registering user",
       },
-      { status: 500 },
+      { status: isDatabaseTimeout ? 503 : 500 },
     );
   }
 }
