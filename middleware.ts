@@ -9,8 +9,7 @@ export async function middleware(request: NextRequest) {
   const url = request.nextUrl;
   const isAuthRoute =
     url.pathname.startsWith("/sign-in") ||
-    url.pathname.startsWith("/sign-up") ||
-    url.pathname.startsWith("/verify");
+    url.pathname.startsWith("/sign-up");
   const isDashboardRoute = url.pathname.startsWith("/dashboard");
 
   if (token && isAuthRoute) {
