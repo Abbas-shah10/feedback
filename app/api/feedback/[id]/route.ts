@@ -13,43 +13,81 @@ const updateSchema = z.object({
   status: z.enum(["open", "in-progress", "resolved", "closed"]).optional(),
 });
 
-async function findOwnedFeedback(id: string, session: { user?: { _id?: string; role?: "user" | "admin" } }) {
+async function findOwnedFeedback(
+  id: string,
+  session: { user?: { _id?: string; role?: "user" | "admin" } },
+) {
   await dbConnect();
   const query: Record<string, string> = { _id: id };
-  if (session?.user.role !== "admin") query.userId = session?.user._id || "";
+  if (session.user?.role !== "admin") query.userId = session.user?._id || "";
   return Feedback.findOne(query);
 }
 
-export async function GET(_request: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function GET(
+  _request: NextRequest,
+  context: { params: Promise<{ id: string }> },
+) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?._id) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  if (!session?.user?._id)
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   const { id } = await context.params;
   const feedback = await findOwnedFeedback(id, session);
-  if (!feedback) return NextResponse.json({ message: "Feedback not found" }, { status: 404 });
+  if (!feedback)
+    return NextResponse.json(
+      { message: "Feedback not found" },
+      { status: 404 },
+    );
   return NextResponse.json(feedback);
 }
 
-export async function PATCH(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function PATCH(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> },
+) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?._id) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  if (!session?.user?._id)
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   const parsed = updateSchema.safeParse(await request.json());
-  if (!parsed.success) return NextResponse.json({ message: "Validation failed", errors: parsed.error.flatten().fieldErrors }, { status: 400 });
-  if (parsed.data.status && session.user.role !== "admin") return NextResponse.json({ message: "Only admins can change status" }, { status: 403 });
+  if (!parsed.success)
+    return NextResponse.json(
+      {
+        message: "Validation failed",
+        errors: parsed.error.flatten().fieldErrors,
+      },
+      { status: 400 },
+    );
+  if (parsed.data.status && session.user.role !== "admin")
+    return NextResponse.json(
+      { message: "Only admins can change status" },
+      { status: 403 },
+    );
 
   const { id } = await context.params;
   const feedback = await findOwnedFeedback(id, session);
-  if (!feedback) return NextResponse.json({ message: "Feedback not found" }, { status: 404 });
+  if (!feedback)
+    return NextResponse.json(
+      { message: "Feedback not found" },
+      { status: 404 },
+    );
   Object.assign(feedback, parsed.data);
   await feedback.save();
   return NextResponse.json({ success: true, feedback });
 }
 
-export async function DELETE(_request: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  _request: NextRequest,
+  context: { params: Promise<{ id: string }> },
+) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?._id) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  if (!session?.user?._id)
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   const { id } = await context.params;
   const feedback = await findOwnedFeedback(id, session);
-  if (!feedback) return NextResponse.json({ message: "Feedback not found" }, { status: 404 });
+  if (!feedback)
+    return NextResponse.json(
+      { message: "Feedback not found" },
+      { status: 404 },
+    );
   await feedback.deleteOne();
   return NextResponse.json({ success: true, message: "Feedback deleted" });
 }
