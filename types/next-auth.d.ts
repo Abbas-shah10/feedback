@@ -6,6 +6,7 @@ declare module "next-auth" {
     _id?: string;
     isAcceptingMessages?: boolean;
     username?: string;
+    role?: "user" | "admin";
   }
   interface Session {
     user: {
@@ -22,5 +23,6 @@ declare module "next-auth/jwt" {
     _id?: string;
     isAcceptingMessages?: boolean;
     username?: string;
+    role?: "user" | "admin";
   }
 }

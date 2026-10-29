@@ -48,6 +48,7 @@ export const authOptions: NextAuthOptions = {
         token._id = user._id?.toString();
         token.isAcceptingMessages = user.isAcceptingMessages;
         token.username = user.username;
+        token.role = user.role ?? "user";
       }
       return token;
     },
@@ -56,6 +57,7 @@ export const authOptions: NextAuthOptions = {
         session.user._id = token._id;
         session.user.isAcceptingMessages = token.isAcceptingMessages;
         session.user.username = token.username;
+        session.user.role = token.role ?? "user";
       }
       return session;
     },
