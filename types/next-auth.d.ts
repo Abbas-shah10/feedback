@@ -12,6 +12,7 @@ declare module "next-auth" {
       _id?: string;
       isAcceptingMessages?: boolean;
       username?: string;
+      role?: "user" | "admin";
     } & DefaultSession["user"];
   }
 }

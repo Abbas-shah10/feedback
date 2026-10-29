@@ -21,6 +21,7 @@ export interface User extends Document {
   username: string;
   email: string;
   password: string;
+  role: "user" | "admin";
   isAcceptingMessage: boolean;
   messages: Message[];
 }
@@ -39,6 +40,11 @@ const UserSchema: Schema<User> = new Schema({
   password: {
     type: String,
     required: true,
+  },
+  role: {
+    type: String,
+    enum: ["user", "admin"],
+    default: "user",
   },
   isAcceptingMessage: {
     type: Boolean,
