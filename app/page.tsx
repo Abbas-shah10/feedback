@@ -1,9 +1,5 @@
-import React from "react";
+import { redirect } from "next/navigation";
 
-const page = () => {
-  return (
-    <h1>hello</h1>
-  );
-};
-
-export default page;
+export default function Page() {
+  redirect("/sign-in");
+}
