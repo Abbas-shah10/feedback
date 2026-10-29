@@ -13,7 +13,7 @@ const updateSchema = z.object({
   status: z.enum(["open", "in-progress", "resolved", "closed"]).optional(),
 });
 
-async function findOwnedFeedback(id: string, session: Awaited<ReturnType<typeof getServerSession>>) {
+async function findOwnedFeedback(id: string, session: { user?: { _id?: string; role?: "user" | "admin" } }) {
   await dbConnect();
   const query: Record<string, string> = { _id: id };
   if (session?.user.role !== "admin") query.userId = session?.user._id || "";
