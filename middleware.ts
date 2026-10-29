@@ -10,23 +10,34 @@ export async function middleware(request: NextRequest) {
   const isAuthRoute =
     url.pathname.startsWith("/sign-in") ||
     url.pathname.startsWith("/sign-up");
-  const isDashboardRoute = url.pathname.startsWith("/dashboard");
+  const isPrivateRoute =
+    url.pathname.startsWith("/home") ||
+    url.pathname.startsWith("/feedback") ||
+    url.pathname.startsWith("/admin") ||
+    url.pathname.startsWith("/dashboard");
 
   if (token && isAuthRoute) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(new URL("/home", request.url));
   }
 
-  if (!token && isDashboardRoute) {
+  if (!token && isPrivateRoute) {
+    if (url.pathname.startsWith("/api/")) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
+  if (token && url.pathname.startsWith("/admin") && token.role !== "admin") {
+    return NextResponse.redirect(new URL("/home", request.url));
+  }
+
   if (!token && url.pathname === "/") {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/sign-in", "/sign-up", "/", "/dashboard/:path*"],
+  matcher: ["/sign-in", "/sign-up", "/", "/home/:path*", "/feedback/:path*", "/admin/:path*", "/dashboard/:path*", "/api/feedback/:path*", "/api/admin/:path*"],
 };
