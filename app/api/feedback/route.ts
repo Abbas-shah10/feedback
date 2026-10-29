@@ -55,15 +55,22 @@ export async function GET(request: NextRequest) {
     50,
   );
   const status = searchParams.get("status") || "";
+
   const category = searchParams.get("category") || "";
+
   const search = searchParams.get("search")?.trim() || "";
+
   const sort = searchParams.get("sort") === "oldest" ? 1 : -1;
 
   await dbConnect();
+
   const query: Record<string, unknown> =
     session.user.role === "admin" ? {} : { userId: session.user._id };
+
   if (status) query.status = status;
+
   if (category) query.category = category;
+
   if (search)
     query.$or = [
       { title: { $regex: search, $options: "i" } },
