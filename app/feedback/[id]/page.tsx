@@ -4,7 +4,14 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { ArrowLeft, MessageCircle, Save, Trash2 } from "lucide-react";
+import { ArrowLeft, MessageCircle, Save, Send, Trash2, ThumbsUp } from "lucide-react";
+
+type CommentItem = {
+  _id: string;
+  body: string;
+  createdAt: string;
+  userId: { username?: string; email?: string } | string;
+};
 
 type FeedbackItem = {
   _id: string;
@@ -13,6 +20,8 @@ type FeedbackItem = {
   category: string;
   priority: string;
   status: string;
+  comments?: CommentItem[];
+  upvotes?: string[];
 };
 
 export default function FeedbackDetailPage() {
