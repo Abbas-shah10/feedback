@@ -1,5 +1,12 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 
+export interface FeedbackComment {
+  _id: Types.ObjectId;
+  userId: Types.ObjectId;
+  body: string;
+  createdAt: Date;
+}
+
 export interface Feedback extends Document {
   title: string;
   description: string;
@@ -7,9 +14,19 @@ export interface Feedback extends Document {
   status: "open" | "in-progress" | "resolved" | "closed";
   priority: "low" | "medium" | "high";
   userId: Types.ObjectId;
+  comments: FeedbackComment[];
+  upvotes: Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
+
+const FeedbackCommentSchema = new Schema<FeedbackComment>(
+  {
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    body: { type: String, required: true, trim: true, maxlength: 1000 },
+  },
+  { timestamps: true },
+);
 
 const FeedbackSchema = new Schema<Feedback>(
   {
@@ -31,6 +48,8 @@ const FeedbackSchema = new Schema<Feedback>(
       default: "medium",
     },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    comments: { type: [FeedbackCommentSchema], default: [] },
+    upvotes: { type: [{ type: Schema.Types.ObjectId, ref: "User" }], default: [] },
   },
   { timestamps: true },
 );

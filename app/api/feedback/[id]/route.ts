@@ -20,7 +20,9 @@ async function findOwnedFeedback(
   await dbConnect();
   const query: Record<string, string> = { _id: id };
   if (session.user?.role !== "admin") query.userId = session.user?._id || "";
-  return Feedback.findOne(query);
+  return Feedback.findOne(query)
+    .populate("userId", "username email")
+    .populate("comments.userId", "username email");
 }
 
 export async function GET(
