@@ -31,6 +31,9 @@ export default function FeedbackDetailPage() {
   const [item, setItem] = useState<FeedbackItem | null>(null);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [comment, setComment] = useState("");
+  const [postingComment, setPostingComment] = useState(false);
+  const [voting, setVoting] = useState(false);
 
   useEffect(() => {
     if (status !== "authenticated") return;
@@ -65,6 +68,36 @@ export default function FeedbackDetailPage() {
     if (!response.ok) setError(data.message || "Unable to save changes");
     else setItem(data.feedback);
     setSaving(false);
+  }
+
+  async function postComment(event: React.FormEvent) {
+    event.preventDefault();
+    if (!comment.trim()) return;
+    setPostingComment(true);
+    setError("");
+    const response = await fetch(`/api/feedback/${params.id}/comments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ body: comment }),
+    });
+    const data = await response.json();
+    if (!response.ok) setError(data.message || "Unable to post comment");
+    else {
+      setItem((current) => current ? { ...current, comments: [...(current.comments || []), data.comment] } : current);
+      setComment("");
+    }
+    setPostingComment(false);
+  }
+
+  async function toggleVote() {
+    if (!item || voting) return;
+    setVoting(true);
+    const response = await fetch(`/api/feedback/${params.id}/vote`, { method: "POST" });
+    if (response.ok) {
+      const data = await response.json();
+      setItem({ ...item, upvotes: data.hasVoted ? [...(item.upvotes || []), session?.user._id || "voted"] : (item.upvotes || []).filter((id) => id !== session?.user._id) });
+    }
+    setVoting(false);
   }
 
   async function remove() {
@@ -215,6 +248,50 @@ export default function FeedbackDetailPage() {
                 </button>
               </div>
             </form>
+          )}
+          {item && (
+            <div className="mt-8 border-t border-slate-200 pt-7">
+              <div className="mb-5 flex items-center justify-between">
+                <h2 className="flex items-center gap-2 text-lg font-bold">
+                  <MessageCircle className="size-5 text-violet-600" /> Discussion
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">{item.comments?.length || 0}</span>
+                </h2>
+                <button
+                  type="button"
+                  onClick={toggleVote}
+                  disabled={voting}
+                  className={`flex h-10 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition ${item.upvotes?.includes(session?.user._id || "") ? "border-violet-200 bg-violet-50 text-violet-700" : "border-slate-200 text-slate-600 hover:border-violet-300"}`}
+                >
+                  <ThumbsUp className="size-4" /> {item.upvotes?.length || 0}
+                </button>
+              </div>
+              <form onSubmit={postComment} className="flex gap-3">
+                <input
+                  value={comment}
+                  onChange={(event) => setComment(event.target.value)}
+                  maxLength={1000}
+                  placeholder="Add a comment..."
+                  className="h-11 min-w-0 flex-1 rounded-xl border border-slate-200 px-4 text-sm outline-none focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
+                />
+                <button disabled={postingComment || !comment.trim()} className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-slate-950 text-white hover:bg-violet-700 disabled:opacity-50" aria-label="Post comment">
+                  <Send className="size-4" />
+                </button>
+              </form>
+              <div className="mt-5 space-y-4">
+                {item.comments?.length ? item.comments.map((entry) => {
+                  const author = typeof entry.userId === "string" ? entry.userId : entry.userId?.username || entry.userId?.email || "User";
+                  return (
+                    <article key={entry._id} className="rounded-xl bg-slate-50 p-4">
+                      <div className="mb-2 flex items-center justify-between gap-3">
+                        <p className="text-sm font-bold text-slate-800">{author}</p>
+                        <time className="text-xs text-slate-400">{new Date(entry.createdAt).toLocaleString()}</time>
+                      </div>
+                      <p className="whitespace-pre-wrap text-sm leading-6 text-slate-600">{entry.body}</p>
+                    </article>
+                  );
+                }) : <p className="py-4 text-center text-sm text-slate-400">No comments yet. Start the conversation.</p>}
+              </div>
+            </div>
           )}
         </section>
       </div>

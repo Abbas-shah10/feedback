@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { signOut, useSession } from "next-auth/react";
-import { ArrowRight, LogOut, MessageCircle, Plus, Search } from "lucide-react";
+import { ArrowRight, LogOut, MessageCircle, Plus, Search, ThumbsUp } from "lucide-react";
 
 type FeedbackItem = {
   _id: string;
@@ -13,6 +13,8 @@ type FeedbackItem = {
   status: string;
   priority: string;
   createdAt: string;
+  comments?: unknown[];
+  upvotes?: string[];
 };
 
 export default function HomePage() {
@@ -261,6 +263,10 @@ export default function HomePage() {
                     </span>
                     <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
                       {item.priority}
+                    </span>
+                    <span className="ml-auto flex items-center gap-1 text-xs font-semibold text-slate-400">
+                      <ThumbsUp className="size-3.5" /> {item.upvotes?.length || 0}
+                      <MessageCircle className="ml-2 size-3.5" /> {item.comments?.length || 0}
                     </span>
                   </div>
                 </Link>
